@@ -1,21 +1,22 @@
 import http from 'node:http';import {readFile,stat} from 'node:fs/promises';import path from 'node:path';import {fileURLToPath} from 'node:url';import {randomBytes,createHash,timingSafeEqual} from 'node:crypto';import {GET,POST} from './routes.mjs';
 import {originMatches} from './origin.mjs';
 const password=process.env.ADMIN_PASSWORD;if(!password||password.length<12||password==='change-this-password-before-running'){console.error('請在 .env 設定至少 12 字元的 ADMIN_PASSWORD。');process.exit(1)}
-const sessions=new Map(),attempts=new Map(),root=fileURLToPath(new URL('../dist/',import.meta.url)),ttl=28800000;
+const sessions=new Map(),attempts=new Map(),root=fileURLToPath(new URL('../dist/',import.meta.url));
 const hash=s=>createHash('sha256').update(s).digest();
 function reply(res,data,status=200){res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(data))}
 function originOK(req){return originMatches(req.headers,`http://${req.headers.host}${req.url}`)}
-function loggedIn(req){const token=(req.headers.cookie||'').split(';').map(v=>v.trim()).find(v=>v.startsWith('pk_session='))?.slice(11);return token&&sessions.has(token)&&sessions.get(token)>Date.now()}
+function loggedIn(req){const token=(req.headers.cookie||'').split(';').map(v=>v.trim()).find(v=>v.startsWith('pk_session='))?.slice(11);return token&&sessions.has(token)}
 async function readBody(req){let size=0,parts=[];for await(const p of req){size+=p.length;if(size>131072)throw Object.assign(Error('資料太大'),{status:413});parts.push(p)}return Buffer.concat(parts)}
-setInterval(()=>{for(const [k,t] of sessions)if(t<Date.now())sessions.delete(k);for(const [k,v] of attempts)if(v.until<Date.now())attempts.delete(k)},60000).unref();
+setInterval(()=>{for(const [k,v] of attempts)if(v.until<Date.now())attempts.delete(k)},60000).unref();
 const server=http.createServer(async(req,res)=>{try{
 res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('X-Frame-Options','DENY');res.setHeader('Referrer-Policy','same-origin');
 const u=new URL(req.url,'http://'+req.headers.host);
+if(u.pathname==='/api/session'&&req.method==='GET')return reply(res,{authenticated:!!loggedIn(req)});
 if(u.pathname==='/api/login'&&req.method==='POST'){
  if(!originOK(req))return reply(res,{error:'請求來源錯誤'},403);const key=req.socket.remoteAddress,now=Date.now(),a=attempts.get(key)||{n:0,until:now+900000};if(a.until<now){a.n=0;a.until=now+900000}if(a.n>=10)return reply(res,{error:'嘗試過多，15 分鐘後再試'},429);
  let b;try{b=JSON.parse((await readBody(req)).toString('utf8'))}catch{return reply(res,{error:'資料格式錯誤'},400)}
  if(typeof b?.password!=='string'||!timingSafeEqual(hash(b.password),hash(password))){a.n++;attempts.set(key,a);return reply(res,{error:'管理密碼錯誤'},401)}
- attempts.delete(key);const token=randomBytes(32).toString('hex');sessions.set(token,now+ttl);res.setHeader('Set-Cookie',`pk_session=${token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=28800${process.env.COOKIE_SECURE==='1'?'; Secure':''}`);return reply(res,{ok:true});
+ attempts.delete(key);const token=randomBytes(32).toString('hex');sessions.set(token,true);res.setHeader('Set-Cookie',`pk_session=${token}; Path=/; HttpOnly; SameSite=Strict${process.env.COOKIE_SECURE==='1'?'; Secure':''}`);return reply(res,{ok:true});
 }
 if(u.pathname==='/api/songs'){
  if(!['GET','POST'].includes(req.method))return reply(res,{error:'不支援此操作'},405);
