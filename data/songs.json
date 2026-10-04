@@ -1846,5 +1846,523 @@
     "artist": "李宇春",
     "hasLyrics": 0,
     "lyrics": ""
+  },
+  {
+    "id": "a9456b16-0d43-4568-9f13-216d338a319a",
+    "title": "朋友",
+    "artist": "周華健",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "92d07a3c-1076-44ff-b505-4a3d6901c242",
+    "title": "讓我歡喜讓我憂",
+    "artist": "周華健",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "7a398d61-05ab-428b-8125-7eef2afc247e",
+    "title": "漂洋過海來看你",
+    "artist": "周華健",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "79a5e982-d1fa-41e1-a23d-16a9056d50af",
+    "title": "那女孩對我說",
+    "artist": "周華健",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "9ac838d5-3caf-45a2-a75f-8965ca9c6f47",
+    "title": "傳奇",
+    "artist": "周華健",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "dfb0f520-52ad-4ef7-aae9-4ac8df501920",
+    "title": "問",
+    "artist": "周華健",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "ea1be971-a61f-468e-9a07-8b0437bb3ada",
+    "title": "領悟",
+    "artist": "周華健",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "582a4168-4224-49e0-a411-cbf503d7c026",
+    "title": "至少還有你",
+    "artist": "周華健",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "ee7129be-992b-43c7-8fdb-e4d3a18cdb0b",
+    "title": "怎麼了",
+    "artist": "周華健",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "5511f58d-11ca-4a0b-bfde-36c2fd0837b6",
+    "title": "少年",
+    "artist": "周華健",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "3207db7e-fc65-4f55-8efd-154989aa0596",
+    "title": "刀劍如夢",
+    "artist": "周華健",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "a69c6ec8-5b73-441f-89d6-e344179e2fc1",
+    "title": "有沒有…你想起我",
+    "artist": "周華健",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "d6cff8fa-779e-4517-9f88-7282e1efa873",
+    "title": "花心",
+    "artist": "周華健",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "4b999016-2631-4b3e-b7f8-266dcd727953",
+    "title": "愛相隨",
+    "artist": "周華健",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "37594568-2d27-47d1-b651-14c4d4362530",
+    "title": "真心英雄",
+    "artist": "周華健",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "b96b110e-b42e-41f7-8057-1994fcf343f3",
+    "title": "孤枕難眠",
+    "artist": "周華健",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "f4fc600d-d298-455a-8d13-73857e59b4d2",
+    "title": "其實不想走",
+    "artist": "周華健",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "281830d3-99aa-43e7-bd0a-0eb1c65e4eda",
+    "title": "天下有情人",
+    "artist": "周華健",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "70507897-32a3-4917-96e2-398055c6b0c6",
+    "title": "風雨無阻",
+    "artist": "周華健",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "8bff3fb1-09ff-4ed3-808f-c3d1ba24e55a",
+    "title": "忘憂草",
+    "artist": "周華健",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "e9199375-3de0-4c12-a8e4-0c833ac1b4bd",
+    "title": "芒種",
+    "artist": "黃齡",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "fb0af14c-8b4a-4273-a877-1906527d12b6",
+    "title": "王妃",
+    "artist": "黃齡",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "69a376ce-8c9b-4b16-b231-9fedbb642fac",
+    "title": "赤伶",
+    "artist": "黃齡",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "31384146-f5e3-4d42-a761-3285c94ffcbb",
+    "title": "星辰大海",
+    "artist": "黃齡",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "abfa98a7-d359-42ff-8710-1a0d75fe843a",
+    "title": "平凡之路",
+    "artist": "黃齡",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "752d1b5d-e7e4-4981-9ea2-4814de797250",
+    "title": "易燃易爆炸",
+    "artist": "黃齡",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "eafc9983-bd95-476d-b64d-f8f94ded486a",
+    "title": "說散就散",
+    "artist": "黃齡",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "9eab00bd-c1fe-4892-9eb2-472c47d98e5e",
+    "title": "漂洋過海來看你",
+    "artist": "黃齡",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "58449a62-f4fc-4084-bca7-b9c602ec4b5a",
+    "title": "紅色高跟鞋",
+    "artist": "黃齡",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "03d203cb-7065-484f-8054-c32872a36178",
+    "title": "有何不可",
+    "artist": "黃齡",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "3e986d6b-458f-442e-8a37-806c3f64b486",
+    "title": "大風吹",
+    "artist": "黃齡",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "ef58b90a-08dc-423f-bdca-849cdff23a9d",
+    "title": "春泥",
+    "artist": "黃齡",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "3763c190-582d-428a-b7ff-ebbcf21c9ab7",
+    "title": "童年",
+    "artist": "黃齡",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "3738442d-2c5c-453b-a772-01183ff4661e",
+    "title": "後來",
+    "artist": "黃齡",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "70e976d2-5abe-4297-932b-8e769ea15ab5",
+    "title": "情人",
+    "artist": "黃齡",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "18b4100d-285d-4b55-ad22-87bb7f6a14c3",
+    "title": "信仰",
+    "artist": "黃齡",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "a84bbb4d-e19c-4e62-84da-7399b4c63309",
+    "title": "牽絲戲",
+    "artist": "黃齡",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "c47d1395-0fab-40e3-89a7-f5128ca0e59b",
+    "title": "茉莉花",
+    "artist": "黃齡",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "ac5b35dc-4556-4f77-bb1b-69fccaad23ca",
+    "title": "想自由",
+    "artist": "黃齡",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "cfaff521-c48d-4f2a-a9fe-9b53cc070dca",
+    "title": "喜歡你",
+    "artist": "黃齡",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "ee1b7cac-84ce-42c1-89bd-599f0ddfb749",
+    "title": "刀馬旦",
+    "artist": "黃齡",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "82151095-66fe-4839-96ca-a45990abceec",
+    "title": "愛如火",
+    "artist": "黃齡",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "618fc9c0-0979-4d0a-86a2-85442c3cce45",
+    "title": "我曾",
+    "artist": "隔壁老樊",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "aa07b605-ccd3-4db1-ab84-cd491b320e8b",
+    "title": "失樂",
+    "artist": "隔壁老樊",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "dd101fa3-4c20-4c73-848d-a890af04a987",
+    "title": "山海",
+    "artist": "隔壁老樊",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "97ed5fc9-5043-46c9-a30f-cb666a6e6aa4",
+    "title": "魔鬼中的天使",
+    "artist": "隔壁老樊",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "7c955fac-fc9d-4e3f-8145-78783e8bffa0",
+    "title": "你把我灌醉",
+    "artist": "隔壁老樊",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "b333f113-4654-4f75-8ae3-646b2ebe2b0a",
+    "title": "那女孩對我說",
+    "artist": "隔壁老樊",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "1c065397-74b3-4d96-ae65-fdc8c25bc5da",
+    "title": "幻聽",
+    "artist": "隔壁老樊",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "f86327fb-3d69-4814-8b0c-000ec96c4e04",
+    "title": "紅色高跟鞋",
+    "artist": "隔壁老樊",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "cc62f38d-62aa-4ff9-aa38-f38cc5726703",
+    "title": "記得",
+    "artist": "隔壁老樊",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "88662064-141e-4ae2-bbf4-47a5d30492c0",
+    "title": "看著我的眼睛說",
+    "artist": "張遠",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "e1dddaf8-1714-4c89-861f-3c4a84d685ba",
+    "title": "說謊",
+    "artist": "張遠",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "cc8c3a14-e1e6-402d-ad2e-b2ac654684e9",
+    "title": "開始懂了",
+    "artist": "張遠",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "7f87e53d-3d6f-4447-a25d-9e9c4b67d34e",
+    "title": "白鴿",
+    "artist": "張遠",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "88082ac1-b92e-450c-a854-b7da4ef0607b",
+    "title": "淚海",
+    "artist": "張遠",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "ad5c7e03-77d0-4b40-8e01-7bd6e7086a0e",
+    "title": "嘉賓",
+    "artist": "張遠",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "d29d1f2a-0eb9-4ab8-b568-7c00fb1e7362",
+    "title": "Bird Can Fly",
+    "artist": "張遠",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "a806d693-27ee-4754-9011-c985bab22f9d",
+    "title": "沉",
+    "artist": "張遠",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "641a6870-18aa-4cba-91d9-9fb92d671edf",
+    "title": "I'll Be With You",
+    "artist": "張遠",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "81e51397-590a-4e8e-adec-81810219af52",
+    "title": "煙火裡的塵埃",
+    "artist": "華晨宇",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "da82050e-823b-4385-96c9-b43ea2722781",
+    "title": "牽手",
+    "artist": "華晨宇",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "e5310ec6-0a6e-4cbf-b51f-3e4ad2a972fa",
+    "title": "舞娘",
+    "artist": "華晨宇",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "6a7c8a59-a9e0-48ec-937b-5c4d4d3e9189",
+    "title": "後來",
+    "artist": "華晨宇",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "8e042bea-4cc1-46b5-b014-cd93438918d9",
+    "title": "少年",
+    "artist": "華晨宇",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "3ebe23e5-2b9b-4512-8a7b-bd225fb32c83",
+    "title": "水手",
+    "artist": "華晨宇",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "efb3dce3-e7dc-4fa1-a762-f20e1e3b67b9",
+    "title": "小星星",
+    "artist": "華晨宇",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "ff2575b4-c29e-44df-abc9-1f64aec23dbe",
+    "title": "我管你",
+    "artist": "華晨宇",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "9a1fe59e-95af-461b-8552-cd3999411fa2",
+    "title": "朋友",
+    "artist": "華晨宇",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "4d5675f4-ce73-4f08-950b-c1724157fb0b",
+    "title": "洋蔥",
+    "artist": "華晨宇",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "10e48b47-65eb-4077-9f20-16213ee527dc",
+    "title": "紅豆",
+    "artist": "華晨宇",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "6c29bdd3-4cc3-45bc-ad51-eec630c1a80f",
+    "title": "愛我還是他",
+    "artist": "華晨宇",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "c71511c2-2717-4f8e-ae7b-427792fbd9e9",
+    "title": "聽媽媽的話",
+    "artist": "華晨宇",
+    "hasLyrics": 0,
+    "lyrics": ""
+  },
+  {
+    "id": "6cb27c17-8e54-4c1e-8efd-6afcfd06e55f",
+    "title": "想見你想見你想見你",
+    "artist": "華晨宇",
+    "hasLyrics": 0,
+    "lyrics": ""
   }
 ]
