@@ -1,5 +1,6 @@
 import { env } from "./db.mjs";
 import { youtubeUrl } from "./youtube-url.mjs";
+import { originMatches } from "./origin.mjs";
 export const dynamic = "force-dynamic";
 const reply = (data, status = 200) => Response.json(data, { status, headers: { "Cache-Control": "no-store" } });
 export async function GET(req) {
@@ -47,7 +48,7 @@ export async function GET(req) {
     return reply({ songs: list.results, total: count?.n || 0, stats: { ...stats, artists: artists.length }, artists });
 }
 export async function POST(req) {
-    if (req.headers.get("Origin") !== new URL(req.url).origin)
+    if (!originMatches(req.headers, req.url))
         return reply({ error: "不允許的請求來源" }, 403);
     // The platform enforces the owner-private access boundary for this site.
     let b;

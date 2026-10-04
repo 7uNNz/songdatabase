@@ -1,9 +1,10 @@
 import http from 'node:http';import {readFile,stat} from 'node:fs/promises';import path from 'node:path';import {fileURLToPath} from 'node:url';import {randomBytes,createHash,timingSafeEqual} from 'node:crypto';import {GET,POST} from './routes.mjs';
+import {originMatches} from './origin.mjs';
 const password=process.env.ADMIN_PASSWORD;if(!password||password.length<12||password==='change-this-password-before-running'){console.error('請在 .env 設定至少 12 字元的 ADMIN_PASSWORD。');process.exit(1)}
 const sessions=new Map(),attempts=new Map(),root=fileURLToPath(new URL('../dist/',import.meta.url)),ttl=28800000;
 const hash=s=>createHash('sha256').update(s).digest();
 function reply(res,data,status=200){res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(data))}
-function originOK(req){try{return new URL(req.headers.origin).host===req.headers.host}catch{return false}}
+function originOK(req){return originMatches(req.headers,`http://${req.headers.host}${req.url}`)}
 function loggedIn(req){const token=(req.headers.cookie||'').split(';').map(v=>v.trim()).find(v=>v.startsWith('pk_session='))?.slice(11);return token&&sessions.has(token)&&sessions.get(token)>Date.now()}
 async function readBody(req){let size=0,parts=[];for await(const p of req){size+=p.length;if(size>131072)throw Object.assign(Error('資料太大'),{status:413});parts.push(p)}return Buffer.concat(parts)}
 setInterval(()=>{for(const [k,t] of sessions)if(t<Date.now())sessions.delete(k);for(const [k,v] of attempts)if(v.until<Date.now())attempts.delete(k)},60000).unref();
