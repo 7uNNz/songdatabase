@@ -1,0 +1,8 @@
+import {DatabaseSync} from 'node:sqlite';import {mkdirSync,existsSync,readFileSync} from 'node:fs';import path from 'node:path';
+const filename=path.resolve(process.env.DB_PATH||'data/songs.sqlite');mkdirSync(path.dirname(filename),{recursive:true});const fresh=!existsSync(filename);const sqlite=new DatabaseSync(filename);
+sqlite.exec("PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000; CREATE TABLE IF NOT EXISTS songs(id TEXT PRIMARY KEY,title TEXT NOT NULL,artist TEXT NOT NULL,lyrics TEXT NOT NULL DEFAULT '',created_at INTEGER NOT NULL); CREATE INDEX IF NOT EXISTS title_idx ON songs(title); CREATE INDEX IF NOT EXISTS artist_idx ON songs(artist);");
+if(!sqlite.prepare('PRAGMA table_info(songs)').all().some(c=>c.name==='youtube_url'))sqlite.exec("ALTER TABLE songs ADD COLUMN youtube_url TEXT");
+if(!sqlite.prepare('PRAGMA table_info(songs)').all().some(c=>c.name==='note'))sqlite.exec("ALTER TABLE songs ADD COLUMN note TEXT");
+if(fresh){const rows=JSON.parse(readFileSync(new URL('../data/songs.json',import.meta.url),'utf8'));const insert=sqlite.prepare('INSERT INTO songs(id,title,artist,lyrics,created_at,youtube_url,note) VALUES(?,?,?,?,?,?,?)');sqlite.exec('BEGIN');try{rows.forEach((r,i)=>insert.run(r.id,r.title,r.artist,r.lyrics,Number(r.created_at)||Date.now()-i,r.youtube_url??null,r.note??null));sqlite.exec('COMMIT')}catch(e){sqlite.exec('ROLLBACK');throw e}}
+function prepare(sql){const stmt=sqlite.prepare(sql);let args=[];return {bind(...values){args=values;return this},async first(){return stmt.get(...args)||null},async all(){return {results:stmt.all(...args)}},async run(){return stmt.run(...args)}}}
+export const env={DB:{prepare}};
