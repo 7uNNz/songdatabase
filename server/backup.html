@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>曲庫備份與還原</title>
+<style>body{font:16px/1.7 system-ui;background:#f5f6fa;color:#283249;margin:0;padding:30px 20px}main{max-width:620px;margin:auto;background:white;border:1px solid #e3e6ee;border-radius:16px;padding:28px}h1{font-size:24px}button,a{color:#425bb1}button{border:0;border-radius:9px;background:#425bb1;color:white;padding:12px 18px;cursor:pointer}button:disabled{opacity:.5}section{border-top:1px solid #e3e6ee;padding:20px 0}input{max-width:100%;margin:12px 0}#status{white-space:pre-wrap}</style>
+<main><a href="/">← 回曲庫</a><h1>曲庫備份與還原</h1>
+<section><h2>下載備份</h2><p>包含歌名、歌手、歌詞、YouTube 網址與備註。請另存到你的電腦。</p><button id="download">下載 JSON 備份</button></section>
+<section><h2>匯入備份</h2><p>新增缺少的歌曲，並補上空白的歌詞、網址與備註。已填寫的資料會保留；不會刪除歌曲。</p><input type="file" id="file" accept="application/json,.json"><p id="preview"></p><button id="restore" disabled>匯入這份備份</button></section><p id="status" role="status"></p></main>
+<script>
+const status=document.querySelector('#status'),file=document.querySelector('#file'),restore=document.querySelector('#restore');let rows;
+document.querySelector('#download').onclick=async()=>{try{status.textContent='正在下載…';const res=await fetch('/api/backup');if(!res.ok)throw Error('下載失敗，請確認已登入歌曲管理。');const blob=await res.blob(),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='pk-library-'+new Date().toISOString().replace(/[:.]/g,'-')+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);status.textContent='備份已下載。';}catch(e){status.textContent=e.message}};
+file.onchange=async()=>{rows=null;restore.disabled=true;document.querySelector('#preview').textContent='';try{const f=file.files[0];if(!f)return;if(f.size>10485760)throw Error('檔案超過 10 MB。');rows=JSON.parse((await f.text()).replace(/^\uFEFF/,''));if(!Array.isArray(rows)||!rows.length)throw Error('請選擇有歌曲資料的 JSON 備份。');document.querySelector('#preview').textContent=`這份備份有 ${rows.length} 首歌，${rows.filter(x=>typeof x.lyrics==='string'&&x.lyrics.trim()).length} 首有歌詞。`;restore.disabled=false;status.textContent='';}catch(e){status.textContent=e.message}};
+restore.onclick=async()=>{restore.disabled=true;try{status.textContent='正在匯入…';const res=await fetch('/api/backup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(rows)}),data=await res.json();if(!res.ok)throw Error(data.error||'匯入失敗');status.textContent=`已處理 ${data.processed} 首歌曲。可以回曲庫確認。`;}catch(e){status.textContent=e.message}finally{restore.disabled=!rows}};
+</script></html>

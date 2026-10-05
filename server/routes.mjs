@@ -43,8 +43,8 @@ export async function GET(req) {
         params.push(JSON.stringify(ids));
     }
     const count = await env.DB.prepare("SELECT count(*) as n FROM songs" + where).bind(...params).first();
-    const list = await env.DB.prepare("SELECT id,title,artist,youtube_url,length(trim(lyrics))>0 as hasLyrics FROM songs" + where + " ORDER BY created_at DESC,id ASC LIMIT 24 OFFSET ?").bind(...params, page * 24).all();
-    const stats = await env.DB.prepare("SELECT count(*) as total,count(distinct artist) as artists,sum(length(trim(lyrics))>0) as ready FROM songs").first();
+    const list = await env.DB.prepare("SELECT id,title,artist,youtube_url,length(trim(lyrics))>0 as \"hasLyrics\" FROM songs" + where + " ORDER BY created_at DESC,id ASC LIMIT 24 OFFSET ?").bind(...params, page * 24).all();
+    const stats = await env.DB.prepare("SELECT count(*) as total,count(distinct artist) as artists,sum(CASE WHEN length(trim(lyrics))>0 THEN 1 ELSE 0 END) as ready FROM songs").first();
     return reply({ songs: list.results, total: count?.n || 0, stats: { ...stats, artists: artists.length }, artists });
 }
 export async function POST(req) {
@@ -78,7 +78,7 @@ export async function POST(req) {
     const note = hasNote ? b.note.trim() : null;
     const id = b.id || crypto.randomUUID();
     if (b.id) {
-        await env.DB.prepare("UPDATE songs SET title=?,artist=?,lyrics=?,youtube_url=CASE WHEN ? THEN ? ELSE youtube_url END,note=CASE WHEN ? THEN ? ELSE note END WHERE id=?").bind(b.title.trim(), b.artist.trim(), b.lyrics, hasUrl ? 1 : 0, url, hasNote ? 1 : 0, note, id).run();
+        await env.DB.prepare("UPDATE songs SET title=?,artist=?,lyrics=?,youtube_url=CASE WHEN ?=1 THEN ? ELSE youtube_url END,note=CASE WHEN ?=1 THEN ? ELSE note END WHERE id=?").bind(b.title.trim(), b.artist.trim(), b.lyrics, hasUrl ? 1 : 0, url, hasNote ? 1 : 0, note, id).run();
     }
     else {
         await env.DB.prepare("INSERT INTO songs(id,title,artist,lyrics,created_at,youtube_url,note) VALUES(?,?,?,?,?,?,?)").bind(id, b.title.trim(), b.artist.trim(), b.lyrics, Date.now(), url, note).run();
