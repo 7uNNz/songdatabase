@@ -115,6 +115,36 @@ export async function compareCatalogTitles(rows) {
   }
   return { matches };
 }
+export async function findDuplicateCatalogTitles() {
+  const songs = (await query('SELECT id,title,artist FROM songs ORDER BY created_at ASC,id ASC')).rows;
+  const groups = new Map();
+  for (const song of songs) {
+    const key = songTitleKey(song.title);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(song);
+  }
+  return [...groups.values()].filter(group => group.length > 1)
+    .map(songs => ({ title: songs[0].title, songs }))
+    .sort((a, b) => a.title.localeCompare(b.title, 'zh-Hant'));
+}
+export async function deleteDuplicateCatalogSongs(ids) {
+  if (!Array.isArray(ids) || !ids.length || ids.length > 1000 || ids.some(id => typeof id !== 'string' || !id) || new Set(ids).size !== ids.length)
+    throw Object.assign(new Error('請選擇要刪除的歌曲'), { status: 400 });
+  return transaction(async client => {
+    const songs = (await query('SELECT id,title FROM songs', [], client)).rows;
+    const groups = new Map();
+    for (const song of songs) {
+      const key = songTitleKey(song.title);
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(song.id);
+    }
+    const duplicateIds = new Set([...groups.values()].filter(group => group.length > 1).flat());
+    if (ids.some(id => !duplicateIds.has(id)))
+      throw Object.assign(new Error('曲庫資料已變更，請重新掃描後再刪除'), { status: 409 });
+    for (const id of ids) await query('DELETE FROM songs WHERE id=?', [id], client);
+    return { deleted: ids.length };
+  });
+}
 function mergeRestoredText(current, incoming) {
   if (!current?.trim()) return incoming;
   // Only replace nonblank text if the incoming backup exactly proves the repair.

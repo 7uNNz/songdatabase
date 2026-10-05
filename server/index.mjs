@@ -1,6 +1,6 @@
 import http from 'node:http';import {readFile,stat} from 'node:fs/promises';import path from 'node:path';import {fileURLToPath} from 'node:url';import {randomBytes,createHash,timingSafeEqual} from 'node:crypto';import {GET,POST} from './routes.mjs';
 import {originMatches} from './origin.mjs';
-import {compareCatalogTitles,exportSongs,restoreSongs} from './db.mjs';
+import {compareCatalogTitles,deleteDuplicateCatalogSongs,exportSongs,findDuplicateCatalogTitles,restoreSongs} from './db.mjs';
 const password=process.env.ADMIN_PASSWORD;if(!password||password.length<12||password==='change-this-password-before-running'){console.error('請在 .env 設定至少 12 字元的 ADMIN_PASSWORD。');process.exit(1)}
 const sessions=new Map(),attempts=new Map(),root=fileURLToPath(new URL('../dist/',import.meta.url));
 const hash=s=>createHash('sha256').update(s).digest();
@@ -16,6 +16,21 @@ if(u.pathname==='/admin/backup'){
  if(req.method!=='GET')return reply(res,{error:'不支援此操作'},405);
  if(!loggedIn(req))return reply(res,{error:'請先回首頁點「歌曲管理」並登入，再開此頁。'},401);
  const html=await readFile(new URL('./backup.html',import.meta.url));res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'});res.end(html);return;
+}
+if(u.pathname==='/admin/duplicates'){
+ if(req.method!=='GET')return reply(res,{error:'不支援此操作'},405);
+ if(!loggedIn(req))return reply(res,{error:'請先回首頁點「歌曲管理」並登入，再開此頁。'},401);
+ const html=await readFile(new URL('./duplicates.html',import.meta.url));res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'});res.end(html);return;
+}
+if(u.pathname==='/api/catalog/duplicates'){
+ if(!loggedIn(req))return reply(res,{error:'請先登入歌曲管理'},401);
+ if(req.method==='GET')return reply(res,{groups:await findDuplicateCatalogTitles()});
+ if(req.method==='POST'){
+  if(!originOK(req))return reply(res,{error:'請求來源錯誤'},403);
+  let payload;try{payload=JSON.parse((await readBody(req)).toString('utf8'))}catch(e){if(e.status)throw e;return reply(res,{error:'資料格式錯誤'},400)}
+  return reply(res,{ok:true,...await deleteDuplicateCatalogSongs(payload?.ids)});
+ }
+ return reply(res,{error:'不支援此操作'},405);
 }
 if(u.pathname==='/api/backup/compare'){
  if(req.method!=='POST')return reply(res,{error:'不支援此操作'},405);

@@ -71,3 +71,4 @@ header{border-color:#b0bfd51c;background:#23283040}.brand{color:#ebeff6}.brand-i
 .url-hint{display:block;margin-top:8px;color:#e4b4c3}
 
 .song-note{font-size:13px;line-height:1.7;color:#acbbce;white-space:pre-wrap;margin:14px 0 22px}.editor-dialog textarea.note-input{min-height:72px;height:72px}
+.admin-tools{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 24px}.admin-tools a{text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
