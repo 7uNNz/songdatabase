@@ -93,12 +93,34 @@ export function undoLatin1UTF8(text) {
   try { return new TextDecoder('utf-8', { fatal: true }).decode(Uint8Array.from([...text], c => c.charCodeAt(0))); }
   catch { return text; }
 }
+export function songTitleKey(text) {
+  return undoLatin1UTF8(typeof text === 'string' ? text : '')
+    .normalize('NFC').trim().toLocaleLowerCase('zh-Hant');
+}
+export async function compareCatalogTitles(rows) {
+  const catalog = (await query('SELECT id,title,artist FROM songs')).rows;
+  const byTitle = new Map();
+  for (const song of catalog) {
+    const key = songTitleKey(song.title);
+    if (!byTitle.has(key)) byTitle.set(key, []);
+    byTitle.get(key).push(song);
+  }
+  const matches = [];
+  for (const [index, row] of rows.entries()) {
+    if (typeof row?.title !== 'string' || !row.title.trim()) continue;
+    const key = songTitleKey(row.title);
+    const existing = byTitle.get(key) || [];
+    if (existing.length) matches.push({ index, title: row.title.trim(), artists: [...new Set(existing.map(song => song.artist).filter(Boolean))] });
+  }
+  return { matches };
+}
 function mergeRestoredText(current, incoming) {
   if (!current?.trim()) return incoming;
   // Only replace nonblank text if the incoming backup exactly proves the repair.
   return undoLatin1UTF8(current) === incoming ? incoming : current;
 }
-export async function restoreSongs(rows) {
+export async function restoreSongs(rows, { duplicateMode = 'add' } = {}) {
+  if (!['add', 'merge'].includes(duplicateMode)) throw Object.assign(new Error('重複處理方式不正確'), { status: 400 });
   if (!Array.isArray(rows) || !rows.length || rows.length > 10000) throw Object.assign(new Error('備份必須包含 1 到 10000 首歌曲'), { status: 400 });
   const ids = new Set();
   for (const r of rows) {
@@ -113,9 +135,20 @@ export async function restoreSongs(rows) {
     ids.add(r.id);
   }
   return transaction(async client => {
+    const catalog = (await query('SELECT * FROM songs', [], client)).rows;
+    const byId = new Map(catalog.map(song => [song.id, song]));
+    const byTitle = new Map();
+    for (const song of catalog) {
+      const key = songTitleKey(song.title);
+      if (!byTitle.has(key)) byTitle.set(key, []);
+      byTitle.get(key).push(song);
+    }
+    let addedCount = 0, mergedCount = 0, alreadyPresentCount = 0;
     for (const r of rows) {
-      const existing = (await query('SELECT * FROM songs WHERE id=?' + (client ? ' FOR UPDATE' : ''), [r.id], client)).rows[0];
-      const merged = existing ? {
+      const matches = duplicateMode === 'merge' ? (byTitle.get(songTitleKey(r.title)) || []) : [];
+      const sameId = byId.has(r.id);
+      const existing = byId.get(r.id) || matches.find(song => songTitleKey(song.artist) === songTitleKey(r.artist)) || matches[0];
+      const mergedSong = existing ? {
         ...existing,
         title: mergeRestoredText(existing.title, r.title),
         artist: mergeRestoredText(existing.artist, r.artist),
@@ -125,9 +158,20 @@ export async function restoreSongs(rows) {
       } : r;
       await query(`INSERT INTO songs(id,title,artist,lyrics,created_at,youtube_url,note) VALUES(?,?,?,?,?,?,?)
         ON CONFLICT(id) DO UPDATE SET title=excluded.title,artist=excluded.artist,
-        lyrics=excluded.lyrics,youtube_url=excluded.youtube_url,note=excluded.note`, valuesOf(merged), client);
+        lyrics=excluded.lyrics,youtube_url=excluded.youtube_url,note=excluded.note`, valuesOf(mergedSong), client);
+      if (existing) {
+        byId.set(mergedSong.id, mergedSong);
+        if (matches.length && existing.id !== r.id) mergedCount++;
+        else if (sameId) alreadyPresentCount++;
+      } else {
+        addedCount++;
+        byId.set(mergedSong.id, mergedSong);
+        const key = songTitleKey(mergedSong.title);
+        if (!byTitle.has(key)) byTitle.set(key, []);
+        byTitle.get(key).push(mergedSong);
+      }
     }
-    return rows.length;
+    return { processed: rows.length, added: addedCount, merged: mergedCount, alreadyPresent: alreadyPresentCount };
   });
 }
 export async function closeDatabase() { if (pool) await pool.end(); else sqlite.close(); }

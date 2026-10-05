@@ -18,9 +18,17 @@ export default function Home(){
  useEffect(()=>{const ac=new AbortController(); const timer=setTimeout(async()=>{setLoading(true);setError('');try{const r=await fetch(`/api/songs?q=${encodeURIComponent(query)}&artist=${encodeURIComponent(chosenArtist)}&filter=${filter}&page=${page}`,{signal:ac.signal});if(!r.ok)throw Error('暫時無法載入歌曲，請稍後重試');const data=await r.json() as {songs:Song[];total:number;stats:typeof stats;artists:{name:string;count:number}[]};setSongs(data.songs.map(s=>({...s,artist:s.artist.replace(/^PK主題[：:]\s*/,'')})));setTotal(data.total);setArtistList(data.artists||[]);setStats({...data.stats,ready:data.stats?.ready||0})}catch(e:any){if(e.name!=='AbortError')setError(e.message)}finally{if(!ac.signal.aborted)setLoading(false)}},query?180:0);return()=>{clearTimeout(timer);ac.abort()}},[query,filter,page,revision,chosenArtist]);
  useEffect(()=>{if(!toast)return;const t=setTimeout(()=>setToast(''),2400);return()=>clearTimeout(t)},[toast]);
  async function mutation(data:any){
- const send=()=>fetch('/api/songs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
- const r=await send();if(r.status===401){setAdmin(false);setLoginPassword('');setLoginError('登入已逾期，請重新登入後再儲存。');loginDialog.current?.showModal();throw Error('請先重新登入，再按一次儲存。')}
- const b=await r.json() as {error?:string;ok?:boolean};if(!r.ok)throw Error(b.error||'儲存失敗');return b;
+ const send=(payload:any)=>fetch('/api/songs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+ let r=await send(data);if(r.status===401){setAdmin(false);setLoginPassword('');setLoginError('登入已逾期，請重新登入後再儲存。');loginDialog.current?.showModal();throw Error('請先重新登入，再按一次儲存。')}
+ let b=await r.json() as {error?:string;ok?:boolean;duplicateCount?:number;artists?:string[]};
+ if(r.status===409&&Number.isInteger(b.duplicateCount)){
+  const names=b.artists?.length?`\n曲庫中的歌手：${b.artists.join('、')}`:'';
+  if(!confirm(`曲庫已有 ${b.duplicateCount} 首同名歌曲「${data.title.trim()}」。${names}\n仍要新增這首歌嗎？`))throw Error('已取消新增，曲庫沒有變更。');
+  r=await send({...data,allowDuplicate:true});
+  if(r.status===401){setAdmin(false);setLoginPassword('');setLoginError('登入已逾期，請重新登入後再儲存。');loginDialog.current?.showModal();throw Error('請先重新登入，再按一次儲存。')}
+  b=await r.json();
+ }
+ if(!r.ok)throw Error(b.error||'儲存失敗');return b;
  }
  async function enterAdmin(){if(admin)return;try{const r=await fetch('/api/session',{cache:'no-store'});const s=await r.json() as {authenticated?:boolean};if(s.authenticated){setAdmin(true);return}}catch{}setLoginPassword('');setLoginError('');loginDialog.current?.showModal()}
  async function login(e:React.FormEvent){e.preventDefault();setLoginBusy(true);setLoginError('');try{const r=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:loginPassword})});const result=await r.json() as {error?:string};if(!r.ok){setLoginError(result.error||'登入失敗');return}setLoginPassword('');setAdmin(true);loginDialog.current?.close()}catch{setLoginError('連線失敗，請稍後再試')}finally{setLoginBusy(false)}}

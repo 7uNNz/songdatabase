@@ -1,4 +1,4 @@
-import { env } from "./db.mjs";
+import { env, songTitleKey } from "./db.mjs";
 import { youtubeUrl } from "./youtube-url.mjs";
 import { originMatches } from "./origin.mjs";
 export const dynamic = "force-dynamic";
@@ -81,6 +81,12 @@ export async function POST(req) {
         await env.DB.prepare("UPDATE songs SET title=?,artist=?,lyrics=?,youtube_url=CASE WHEN ?=1 THEN ? ELSE youtube_url END,note=CASE WHEN ?=1 THEN ? ELSE note END WHERE id=?").bind(b.title.trim(), b.artist.trim(), b.lyrics, hasUrl ? 1 : 0, url, hasNote ? 1 : 0, note, id).run();
     }
     else {
+        if (b.allowDuplicate !== true) {
+            const catalog = await env.DB.prepare("SELECT title,artist FROM songs").all();
+            const sameTitle = catalog.results.filter(song => songTitleKey(song.title) === songTitleKey(b.title));
+            if (sameTitle.length)
+                return reply({ error: `曲庫已有 ${sameTitle.length} 首同名歌曲`, duplicateCount: sameTitle.length, artists: [...new Set(sameTitle.map(song => song.artist).filter(Boolean))] }, 409);
+        }
         await env.DB.prepare("INSERT INTO songs(id,title,artist,lyrics,created_at,youtube_url,note) VALUES(?,?,?,?,?,?,?)").bind(id, b.title.trim(), b.artist.trim(), b.lyrics, Date.now(), url, note).run();
     }
     return reply({ ok: true, id });

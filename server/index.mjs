@@ -1,6 +1,6 @@
 import http from 'node:http';import {readFile,stat} from 'node:fs/promises';import path from 'node:path';import {fileURLToPath} from 'node:url';import {randomBytes,createHash,timingSafeEqual} from 'node:crypto';import {GET,POST} from './routes.mjs';
 import {originMatches} from './origin.mjs';
-import {exportSongs,restoreSongs} from './db.mjs';
+import {compareCatalogTitles,exportSongs,restoreSongs} from './db.mjs';
 const password=process.env.ADMIN_PASSWORD;if(!password||password.length<12||password==='change-this-password-before-running'){console.error('請在 .env 設定至少 12 字元的 ADMIN_PASSWORD。');process.exit(1)}
 const sessions=new Map(),attempts=new Map(),root=fileURLToPath(new URL('../dist/',import.meta.url));
 const hash=s=>createHash('sha256').update(s).digest();
@@ -17,13 +17,23 @@ if(u.pathname==='/admin/backup'){
  if(!loggedIn(req))return reply(res,{error:'請先回首頁點「歌曲管理」並登入，再開此頁。'},401);
  const html=await readFile(new URL('./backup.html',import.meta.url));res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'});res.end(html);return;
 }
+if(u.pathname==='/api/backup/compare'){
+ if(req.method!=='POST')return reply(res,{error:'不支援此操作'},405);
+ if(!loggedIn(req))return reply(res,{error:'請先登入歌曲管理'},401);
+ if(!originOK(req))return reply(res,{error:'請求來源錯誤'},403);
+ let rows;try{rows=JSON.parse((await readBody(req,10485760)).toString('utf8').replace(/^\uFEFF/,''))}catch(e){if(e.status)throw e;return reply(res,{error:'請選擇 JSON 備份檔'},400)}
+ if(!Array.isArray(rows)||!rows.length||rows.length>10000)return reply(res,{error:'備份必須包含 1 到 10000 首歌曲'},400);
+ return reply(res,await compareCatalogTitles(rows));
+}
 if(u.pathname==='/api/backup'){
  if(!loggedIn(req))return reply(res,{error:'請先登入歌曲管理'},401);
  if(req.method==='GET'){res.setHeader('Content-Disposition','attachment; filename="pk-library-backup.json"');return reply(res,await exportSongs())}
  if(req.method==='POST'){
   if(!originOK(req))return reply(res,{error:'請求來源錯誤'},403);
-  let rows;try{rows=JSON.parse((await readBody(req,10485760)).toString('utf8').replace(/^\uFEFF/,''))}catch(e){if(e.status)throw e;return reply(res,{error:'請選擇 JSON 備份檔'},400)}
-  return reply(res,{ok:true,processed:await restoreSongs(rows)});
+  let payload;try{payload=JSON.parse((await readBody(req,10485760)).toString('utf8').replace(/^\uFEFF/,''))}catch(e){if(e.status)throw e;return reply(res,{error:'請選擇 JSON 備份檔'},400)}
+  const rows=Array.isArray(payload)?payload:payload?.rows;
+  const result=await restoreSongs(rows,{duplicateMode:Array.isArray(payload)?'add':payload?.duplicateMode});
+  return reply(res,{ok:true,...result});
  }
  return reply(res,{error:'不支援此操作'},405);
 }
