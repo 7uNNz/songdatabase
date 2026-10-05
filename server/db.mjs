@@ -87,6 +87,17 @@ function prepare(sql) {
 }
 export const env = { DB: { prepare } };
 export async function exportSongs() { return (await query('SELECT * FROM songs ORDER BY created_at DESC,id ASC')).rows; }
+// Strictly undo UTF-8 bytes mistakenly decoded as Latin-1. Never guess or drop bytes.
+export function undoLatin1UTF8(text) {
+  if (typeof text !== 'string' || !text || [...text].some(c => c.codePointAt(0) > 255)) return text;
+  try { return new TextDecoder('utf-8', { fatal: true }).decode(Uint8Array.from([...text], c => c.charCodeAt(0))); }
+  catch { return text; }
+}
+function mergeRestoredText(current, incoming) {
+  if (!current?.trim()) return incoming;
+  // Only replace nonblank text if the incoming backup exactly proves the repair.
+  return undoLatin1UTF8(current) === incoming ? incoming : current;
+}
 export async function restoreSongs(rows) {
   if (!Array.isArray(rows) || !rows.length || rows.length > 10000) throw Object.assign(new Error('備份必須包含 1 到 10000 首歌曲'), { status: 400 });
   const ids = new Set();
@@ -102,11 +113,20 @@ export async function restoreSongs(rows) {
     ids.add(r.id);
   }
   return transaction(async client => {
-    for (const r of rows) await query(`INSERT INTO songs(id,title,artist,lyrics,created_at,youtube_url,note) VALUES(?,?,?,?,?,?,?)
-      ON CONFLICT(id) DO UPDATE SET
-      lyrics=CASE WHEN length(trim(songs.lyrics))=0 THEN excluded.lyrics ELSE songs.lyrics END,
-      youtube_url=CASE WHEN songs.youtube_url IS NULL OR songs.youtube_url='' THEN excluded.youtube_url ELSE songs.youtube_url END,
-      note=CASE WHEN songs.note IS NULL OR songs.note='' THEN excluded.note ELSE songs.note END`, valuesOf(r), client);
+    for (const r of rows) {
+      const existing = (await query('SELECT * FROM songs WHERE id=?' + (client ? ' FOR UPDATE' : ''), [r.id], client)).rows[0];
+      const merged = existing ? {
+        ...existing,
+        title: mergeRestoredText(existing.title, r.title),
+        artist: mergeRestoredText(existing.artist, r.artist),
+        lyrics: mergeRestoredText(existing.lyrics, r.lyrics),
+        note: mergeRestoredText(existing.note, r.note),
+        youtube_url: existing.youtube_url?.trim() ? existing.youtube_url : r.youtube_url
+      } : r;
+      await query(`INSERT INTO songs(id,title,artist,lyrics,created_at,youtube_url,note) VALUES(?,?,?,?,?,?,?)
+        ON CONFLICT(id) DO UPDATE SET title=excluded.title,artist=excluded.artist,
+        lyrics=excluded.lyrics,youtube_url=excluded.youtube_url,note=excluded.note`, valuesOf(merged), client);
+    }
     return rows.length;
   });
 }
