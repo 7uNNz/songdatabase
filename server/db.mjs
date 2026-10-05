@@ -1,5 +1,6 @@
 import { readFileSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
+import { randomUUID } from 'node:crypto';
 import { postgresSQL } from './sql.mjs';
 import { youtubeUrl } from './youtube-url.mjs';
 
@@ -110,7 +111,7 @@ export async function compareCatalogTitles(rows) {
     if (typeof row?.title !== 'string' || !row.title.trim()) continue;
     const key = songTitleKey(row.title);
     const existing = byTitle.get(key) || [];
-    if (existing.length) matches.push({ index, title: row.title.trim(), artists: [...new Set(existing.map(song => song.artist).filter(Boolean))] });
+    if (existing.length) matches.push({ index, title: row.title.trim(), incomingArtist: row.artist || '', existing: existing.map(song => ({ id: song.id, artist: song.artist })) });
   }
   return { matches };
 }
@@ -119,7 +120,7 @@ function mergeRestoredText(current, incoming) {
   // Only replace nonblank text if the incoming backup exactly proves the repair.
   return undoLatin1UTF8(current) === incoming ? incoming : current;
 }
-export async function restoreSongs(rows, { duplicateMode = 'add' } = {}) {
+export async function restoreSongs(rows, { duplicateMode = 'add', artistMerges = [], distinctIndexes = [], skipIndexes = [] } = {}) {
   if (!['add', 'merge'].includes(duplicateMode)) throw Object.assign(new Error('重複處理方式不正確'), { status: 400 });
   if (!Array.isArray(rows) || !rows.length || rows.length > 10000) throw Object.assign(new Error('備份必須包含 1 到 10000 首歌曲'), { status: 400 });
   const ids = new Set();
@@ -134,6 +135,12 @@ export async function restoreSongs(rows, { duplicateMode = 'add' } = {}) {
       throw Object.assign(new Error('備份資料格式不正確，尚未寫入任何資料'), { status: 400 });
     ids.add(r.id);
   }
+  if (![artistMerges, distinctIndexes, skipIndexes].every(Array.isArray)
+    || [...distinctIndexes, ...skipIndexes].some(i => !Number.isInteger(i) || i < 0 || i >= rows.length)
+    || artistMerges.some(x => !x || !Number.isInteger(x.index) || x.index < 0 || x.index >= rows.length || typeof x.targetId !== 'string'))
+    throw Object.assign(new Error('比對選擇資料格式不正確，請重新比對'), { status: 400 });
+  const mergeTargets = new Map(artistMerges.map(x => [x.index, x.targetId]));
+  const distinct = new Set(distinctIndexes), skipped = new Set(skipIndexes);
   return transaction(async client => {
     const catalog = (await query('SELECT * FROM songs', [], client)).rows;
     const byId = new Map(catalog.map(song => [song.id, song]));
@@ -143,8 +150,32 @@ export async function restoreSongs(rows, { duplicateMode = 'add' } = {}) {
       if (!byTitle.has(key)) byTitle.set(key, []);
       byTitle.get(key).push(song);
     }
-    let addedCount = 0, mergedCount = 0, alreadyPresentCount = 0;
-    for (const r of rows) {
+    let addedCount = 0, mergedCount = 0, alreadyPresentCount = 0, skippedCount = 0;
+    for (const [index, r] of rows.entries()) {
+      if (skipped.has(index)) { skippedCount++; continue; }
+      if (mergeTargets.has(index)) {
+        const target = byId.get(mergeTargets.get(index));
+        if (!target || songTitleKey(target.title) !== songTitleKey(r.title))
+          throw Object.assign(new Error('曲庫歌曲已變更，請重新比對後再匯入'), { status: 409 });
+        const parts = text => text.split(/[/／、,，&＆+＋]/u).map(x => x.trim()).filter(Boolean);
+        const currentArtists = parts(target.artist || '');
+        const newArtists = parts(r.artist || '').filter(name => !currentArtists.some(old => songTitleKey(old) === songTitleKey(name)));
+        const artist = newArtists.length ? [...currentArtists, ...newArtists].join(' / ') : target.artist;
+        const lyrics = mergeRestoredText(target.lyrics, r.lyrics);
+        const note = mergeRestoredText(target.note, r.note);
+        const youtube_url = target.youtube_url?.trim() ? target.youtube_url : r.youtube_url;
+        await query('UPDATE songs SET artist=?,lyrics=?,note=?,youtube_url=? WHERE id=?', [artist, lyrics, note, youtube_url, target.id], client);
+        Object.assign(target, { artist, lyrics, note, youtube_url });
+        mergedCount++;
+        continue;
+      }
+      if (distinct.has(index)) {
+        const distinctSong = { ...r, id: byId.has(r.id) ? randomUUID() : r.id };
+        await query('INSERT INTO songs(id,title,artist,lyrics,created_at,youtube_url,note) VALUES(?,?,?,?,?,?,?)', valuesOf(distinctSong), client);
+        addedCount++;
+        byId.set(distinctSong.id, distinctSong);
+        continue;
+      }
       const matches = duplicateMode === 'merge' ? (byTitle.get(songTitleKey(r.title)) || []) : [];
       const sameId = byId.has(r.id);
       const existing = byId.get(r.id) || matches.find(song => songTitleKey(song.artist) === songTitleKey(r.artist)) || matches[0];
@@ -171,7 +202,7 @@ export async function restoreSongs(rows, { duplicateMode = 'add' } = {}) {
         byTitle.get(key).push(mergedSong);
       }
     }
-    return { processed: rows.length, added: addedCount, merged: mergedCount, alreadyPresent: alreadyPresentCount };
+    return { processed: rows.length, added: addedCount, merged: mergedCount, alreadyPresent: alreadyPresentCount, skipped: skippedCount };
   });
 }
 export async function closeDatabase() { if (pool) await pool.end(); else sqlite.close(); }

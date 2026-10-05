@@ -32,7 +32,12 @@ if(u.pathname==='/api/backup'){
   if(!originOK(req))return reply(res,{error:'請求來源錯誤'},403);
   let payload;try{payload=JSON.parse((await readBody(req,10485760)).toString('utf8').replace(/^\uFEFF/,''))}catch(e){if(e.status)throw e;return reply(res,{error:'請選擇 JSON 備份檔'},400)}
   const rows=Array.isArray(payload)?payload:payload?.rows;
-  const result=await restoreSongs(rows,{duplicateMode:Array.isArray(payload)?'add':payload?.duplicateMode});
+  const result=await restoreSongs(rows,{
+   duplicateMode:Array.isArray(payload)?'add':payload?.duplicateMode,
+   artistMerges:Array.isArray(payload?.artistMerges)?payload.artistMerges:[],
+   distinctIndexes:Array.isArray(payload?.distinctIndexes)?payload.distinctIndexes:[],
+   skipIndexes:Array.isArray(payload?.skipIndexes)?payload.skipIndexes:[]
+  });
   return reply(res,{ok:true,...result});
  }
  return reply(res,{error:'不支援此操作'},405);
